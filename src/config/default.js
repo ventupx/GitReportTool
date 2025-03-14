@@ -30,13 +30,13 @@ export default {
     
     // OpenAI API 基础 URL，可以使用官方 API 或自定义 API 端点
     // 使用官方 API 时，baseURL 为 'https://api.openai.com/v1/'
-    baseURL: 'https://api.rcouyi.com/v1/',
+    baseURL: '',
     
     // OpenAI API 密钥，如果不设置则跳过 OpenAI 功能
-    apiKey: 'sk-g5SfJ1KDR5WY7dLJD3BcFd03A0B647BfA9B694Af677bEd0c',
+    apiKey: '',
     
     // 使用的模型
-    model: 'claude-3-7-sonnet-20250219',
+    model: '',
     
     // 温度参数，控制输出的随机性（0-2 之间，越低越确定性，越高越创造性）
     temperature: 0.7,

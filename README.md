@@ -13,6 +13,7 @@
 - 详细的错误处理和日志输出
 - 彩色控制台输出，提高可读性
 - 默认显示详细的提交记录
+- 集成 OpenAI，自动生成周报点评和工作建议
 
 ## 安装
 
@@ -82,6 +83,50 @@ pnpm start --ignore-errors
 
 如果不需要这些详细信息，可以使用 `--no-verbose` 选项关闭详细模式。
 
+## OpenAI 集成
+
+工具集成了 OpenAI API，可以自动生成周报点评和工作建议。要启用此功能，需要在配置文件中设置 OpenAI API 密钥：
+
+```javascript
+// 在 src/config/default.js 中设置
+openai: {
+  enabled: true,
+  baseURL: 'https://api.openai.com/v1',
+  apiKey: '你的 OpenAI API 密钥',
+  model: 'gpt-3.5-turbo'  // 或其他支持的模型
+}
+```
+
+如果未设置 API 密钥，工具会跳过 AI 点评功能。
+
+### AI 点评功能
+
+启用 OpenAI 集成后，工具会：
+
+1. 分析周报内容，包括提交记录和代码变更
+2. 总结本周的主要工作内容和成就
+3. 分析可能存在的问题或挑战
+4. 对团队的工作进行评价
+5. 提出改进建议或下周工作重点
+
+AI 点评会添加到生成的报告末尾，格式如下：
+
+```markdown
+## AI 周报点评
+
+### 本周工作总结
+[总结本周的主要工作内容和成就]
+
+### 问题与挑战
+[分析可能存在的问题或挑战]
+
+### 工作评价
+[对团队的工作进行评价]
+
+### 改进建议
+[提出改进建议或下周工作重点]
+```
+
 ## 配置文件
 
 默认配置文件位于 `src/config/default.js`，您可以创建自己的配置文件并通过 `--config` 选项指定。
@@ -112,7 +157,25 @@ export default {
   ignoreDirs: ['node_modules', 'dist', 'build', '.git', '.idea', '.vscode'],
   
   // 代码分析的最大行数限制
-  maxAnalysisLines: 10000
+  maxAnalysisLines: 10000,
+  
+  // OpenAI 配置
+  openai: {
+    // 是否启用 OpenAI 功能
+    enabled: true,
+    
+    // OpenAI API 基础 URL
+    baseURL: 'https://api.openai.com/v1',
+    
+    // OpenAI API 密钥
+    apiKey: '',
+    
+    // 使用的模型
+    model: 'gpt-3.5-turbo',
+    
+    // 温度参数（0-2 之间）
+    temperature: 0.7
+  }
 };
 ```
 
@@ -124,6 +187,7 @@ export default {
 - 首次提交（没有父提交的提交）
 - 无效的 Git 仓库
 - 访问权限问题
+- OpenAI API 调用失败
 
 详细模式下会显示完整的错误信息和堆栈跟踪，使用 `--ignore-errors` 选项可以在遇到错误时继续执行。
 
@@ -137,6 +201,7 @@ export default {
 - 贡献者统计（每个贡献者的提交次数、代码行变更等）
 - 文件类型统计（各种文件类型的变更次数）
 - 仓库详情（每个仓库的提交记录、变更文件等）
+- AI 周报点评（如果启用了 OpenAI 功能）
 
 ### JSON 格式
 

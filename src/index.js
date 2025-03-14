@@ -115,7 +115,7 @@ async function main() {
     
     // 格式化报告
     log.info('正在格式化报告...');
-    const reportContent = formatReport(reportData);
+    const reportContent = await formatReport(reportData);
     
     // 生成报告文件名
     const filename = generateReportFilename();
@@ -133,6 +133,14 @@ async function main() {
       log.warning('在指定时间范围内没有发现任何提交记录');
     } else {
       log.success('周报生成完成！');
+      
+      // 如果启用了 OpenAI 功能但未设置 API 密钥，则提示用户
+      if (config.openai?.enabled && !config.openai?.apiKey) {
+        log.warning('未设置 OpenAI API 密钥，跳过 AI 点评功能');
+        log.info('如需启用 AI 点评功能，请在配置文件中设置 openai.apiKey');
+      } else if (config.openai?.enabled && config.openai?.apiKey) {
+        log.success('已添加 AI 点评到报告中');
+      }
     }
     
   } catch (error) {

@@ -2,6 +2,7 @@ import _ from 'lodash';
 import chalk from 'chalk';
 import { getRepositoryInfo, getCommitsInDateRange, analyzeCodeChanges } from './gitService.js';
 import { formatDate, getReportStartDate, getReportEndDate } from '../utils/dateUtils.js';
+import { generateReportReview } from './openaiService.js';
 import config from '../config/default.js';
 
 /**
@@ -380,17 +381,49 @@ export const formatReportAsText = (reportData) => {
 /**
  * 根据配置的输出格式格式化报告
  * @param {Object} reportData 报告数据
- * @returns {string} 格式化后的报告
+ * @returns {Promise<string>} 格式化后的报告
  */
-export const formatReport = (reportData) => {
+export const formatReport = async (reportData) => {
+  let formattedReport;
+  
   switch (config.outputFormat.toLowerCase()) {
     case 'markdown':
-      return formatReportAsMarkdown(reportData);
+      formattedReport = formatReportAsMarkdown(reportData);
+      break;
     case 'json':
-      return formatReportAsJson(reportData);
+      formattedReport = formatReportAsJson(reportData);
+      break;
     case 'text':
-      return formatReportAsText(reportData);
+      formattedReport = formatReportAsText(reportData);
+      break;
     default:
-      return formatReportAsMarkdown(reportData);
+      formattedReport = formatReportAsMarkdown(reportData);
   }
+  
+  // 如果启用了 OpenAI 功能并且有 API 密钥，则生成周报点评
+  if (config.openai?.enabled && config.openai?.apiKey) {
+    try {
+      console.log(chalk.blue('\n开始生成 AI 周报点评...'));
+      
+      // 生成周报点评（流式输出）
+      const review = await generateReportReview(formattedReport);
+      
+      // 如果成功生成点评，则添加到报告末尾
+      if (review) {
+        if (config.outputFormat.toLowerCase() === 'json') {
+          // 对于 JSON 格式，将点评添加到 JSON 对象中
+          const reportObj = JSON.parse(formattedReport);
+          reportObj.aiReview = review;
+          return JSON.stringify(reportObj, null, 2);
+        } else {
+          // 对于其他格式，直接添加到文本末尾
+          return `${formattedReport}\n\n${review}`;
+        }
+      }
+    } catch (error) {
+      console.error(chalk.red(`添加 AI 点评时出错: ${error.message}`));
+    }
+  }
+  
+  return formattedReport;
 }; 
